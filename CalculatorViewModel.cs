@@ -43,7 +43,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
         OperationCommand = new RelayCommand(param => SetOperation(param.ToString()));
         EqualsCommand = new RelayCommand(_ => CalculateResult());
         ClearCommand = new RelayCommand(_ => Clear());
-        UnaryOperationCommand = new RelayCommand(param => PerformUnaryOperation(param.ToString()));
+        UnaryOperationCommand = new RelayCommand(param => ApplyUnaryOperation(param.ToString()));
         ClearEntryCommand = new RelayCommand(_ => ClearEntry());
         BackspaceCommand = new RelayCommand(_ => Backspace());
         OpenMemoryWindowCommand = new RelayCommand(_ => OpenMemoryWindow());
@@ -65,45 +65,63 @@ public class CalculatorViewModel : INotifyPropertyChanged
 
     private void SetOperation(string operation)
     {
-        if (!_isNewNumber)
+        try
         {
-            double inputNumber = double.Parse(DisplayText);
+            if (!_isNewNumber)
+            {
+                double inputNumber = double.Parse(DisplayText);
 
-            if (_currentOperator != null)
-            {
-                // Executăm operația anterioară și salvăm rezultatul intermediar
-                _currentResult = _calculatorModel.PerformOperation(_currentResult, inputNumber, _currentOperator);
-                DisplayText = _currentResult.ToString();
+                if (_currentOperator != null)
+                {
+                    _currentResult = _calculatorModel.PerformOperation(_currentResult, inputNumber, _currentOperator);
+                    DisplayText = _currentResult.ToString();
+                }
+                else
+                {
+                    _currentResult = inputNumber;
+                }
             }
-            else
-            {
-                _currentResult = inputNumber;
-            }
+
+            _currentOperator = operation;
+            _isNewNumber = true;
         }
-
-        _currentOperator = operation;
-        _isNewNumber = true;
+        catch (Exception ex)
+        {
+            MessageBox.Show("Eroare la setarea operatorului: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            DisplayText = "0";
+        }
     }
+
 
     private void CalculateResult()
     {
-        if (_currentOperator != null && !_isNewNumber)
+        try
         {
+            if (_currentOperator == null || _isNewNumber)
+                return;
+
             double inputNumber = double.Parse(DisplayText);
             _currentResult = _calculatorModel.PerformOperation(_currentResult, inputNumber, _currentOperator);
             DisplayText = _currentResult.ToString();
-            _currentOperator = null; // Resetăm operatorul pentru a permite o nouă operație
-        }
 
-        _isNewNumber = true;
+            _currentOperator = null;  // Resetăm operatorul
+            _isNewNumber = true;      // Următorul număr trebuie să fie nou
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Eroare la calcul: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            DisplayText = "0";
+        }
     }
+
     private void Backspace()
     {
         if (DisplayText.Length > 1)
             DisplayText = DisplayText.Substring(0, DisplayText.Length - 1);
         else
-            DisplayText = "0";
+            DisplayText = "0"; // Evită un display gol
     }
+
 
     private void ClearEntry()
     {
@@ -118,66 +136,57 @@ public class CalculatorViewModel : INotifyPropertyChanged
         _currentOperator = null;
         _isNewNumber = true;
     }
-    private void PerformUnaryOperation(string operation)
+    private void ApplyUnaryOperation(string operation)
     {
         try
         {
-            double value = double.Parse(DisplayText);
-            double result = _calculatorModel.PerformUnaryOperation(value, operation);
-            DisplayText = result.ToString();
+            double value = double.TryParse(DisplayText, out double result) ? result : 0;
+            value = _calculatorModel.PerformUnaryOperation(value, operation);
+            DisplayText = value.ToString();
         }
         catch (Exception ex)
         {
-            DisplayText = "Eroare";
+            MessageBox.Show("Eroare la aplicarea operației unare: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            DisplayText = "0";
         }
-        _isNewNumber = true;
     }
     private void MemoryOperation(string operation)
     {
-        double value = double.Parse(DisplayText);
-
+        double value;
         switch (operation)
         {
             case "MC": // Memory Clear
                 MemoryList.Clear();
                 break;
 
-            case "MS": // Memory Store (Adaugă în memorie)
+            case "MS": // Memory Store
+                value = double.Parse(DisplayText);
                 MemoryList.Add(value);
                 break;
 
-            case "MR": // Memory Recall (Ultima valoare din memorie)
+            case "MR": // Memory Recall
                 if (MemoryList.Count > 0)
                     DisplayText = MemoryList[^1].ToString();
+                else
+                    MessageBox.Show("Memoria este goală!", "Atenție", MessageBoxButton.OK, MessageBoxImage.Warning);
                 break;
 
             case "M+": // Memory Add
                 if (MemoryList.Count > 0)
-                {
-                    MemoryList[^1] += value;
-                }
+                    MemoryList[^1] += double.Parse(DisplayText);
                 else
-                {
-                    MemoryList.Add(value);
-                }
+                    MemoryList.Add(double.Parse(DisplayText));
                 break;
 
             case "M-": // Memory Subtract
                 if (MemoryList.Count > 0)
-                {
-                    MemoryList[^1] -= value;
-                }
+                    MemoryList[^1] -= double.Parse(DisplayText);
                 else
-                {
-                    MemoryList.Add(-value);
-                }
-                break;
-
-            case "M>": // Deschide fereastra de memorie
-                OpenMemoryWindow();
+                    MessageBox.Show("Memoria este goală!", "Atenție", MessageBoxButton.OK, MessageBoxImage.Warning);
                 break;
         }
     }
+
 
     private void OpenMemoryWindow()
     {
