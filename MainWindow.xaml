@@ -1,0 +1,123 @@
+﻿<Window x:Class="CalculatorApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Calculator" Height="650" Width="400"
+        Background="#121212"
+        Foreground="White"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Stil general pentru butoane -->
+        <Style x:Key="BaseButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele mai mici de memorie -->
+        <Style x:Key="MemoryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="50"/>
+        </Style>
+
+        <!-- Stil pentru butoanele numerice -->
+        <Style x:Key="NumberButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#303030"/>
+        </Style>
+
+        <!-- Stil pentru butoanele de operații -->
+        <Style x:Key="OperatorButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#404040"/>
+        </Style>
+
+        <!-- Stil pentru butoanele funcționale -->
+        <Style x:Key="FunctionButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#505050"/>
+        </Style>
+
+        <!-- Stil pentru butonul "=" -->
+        <Style x:Key="EqualsButtonStyle" TargetType="Button" BasedOn="{StaticResource OperatorButtonStyle}">
+            <Setter Property="Background" Value="#0097a7"/>
+            <Setter Property="FontSize" Value="24"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Afișajul -->
+        <TextBlock Text="{Binding DisplayText}" 
+                   FontSize="48"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Top"
+                   Margin="10,20,10,0"
+                   Padding="10"
+                   Height="80"
+                   Background="Transparent"
+                   TextAlignment="Right"/>
+
+        <StackPanel Margin="10,120,10,10">
+            <!-- Linie 1: Butoane de memorie mai compacte -->
+            <UniformGrid Columns="6" Rows="1" HorizontalAlignment="Stretch">
+                <Button Content="MC" Command="{Binding MemoryCommand}" CommandParameter="MC" Style="{StaticResource MemoryButtonStyle}"/>
+                <Button Content="MR" Command="{Binding MemoryCommand}" CommandParameter="MR" Style="{StaticResource MemoryButtonStyle}"/>
+                <Button Content="M+" Command="{Binding MemoryCommand}" CommandParameter="M+" Style="{StaticResource MemoryButtonStyle}"/>
+                <Button Content="M-" Command="{Binding MemoryCommand}" CommandParameter="M-" Style="{StaticResource MemoryButtonStyle}"/>
+                <Button Content="MS" Command="{Binding MemoryCommand}" CommandParameter="MS" Style="{StaticResource MemoryButtonStyle}"/>
+                <Button Content="M>" Command="{Binding OpenMemoryWindowCommand}" Style="{StaticResource MemoryButtonStyle}"/>
+            </UniformGrid>
+
+            <!-- Restul butoanelor, grupate câte 4 pe rând -->
+            <UniformGrid Columns="4" Rows="6" Margin="0,10,0,0">
+                <!-- Linie 2: Funcții speciale -->
+                <Button Content="%" Command="{Binding OperationCommand}" CommandParameter="%" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="CE" Command="{Binding ClearEntryCommand}" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="C" Command="{Binding ClearCommand}" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="⌫" Command="{Binding BackspaceCommand}" Style="{StaticResource FunctionButtonStyle}"/>
+
+                <!-- Linie 3: Operații unare -->
+                <Button Content="1/x" Command="{Binding UnaryOperationCommand}" CommandParameter="1/x" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="x²" Command="{Binding UnaryOperationCommand}" CommandParameter="x²" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="√x" Command="{Binding UnaryOperationCommand}" CommandParameter="√" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="÷" Command="{Binding OperationCommand}" CommandParameter="/" Style="{StaticResource OperatorButtonStyle}"/>
+
+                <!-- Linie 4: Numere 7-9 și operații -->
+                <Button Content="7" Command="{Binding NumberCommand}" CommandParameter="7" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="8" Command="{Binding NumberCommand}" CommandParameter="8" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="9" Command="{Binding NumberCommand}" CommandParameter="9" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="×" Command="{Binding OperationCommand}" CommandParameter="*" Style="{StaticResource OperatorButtonStyle}"/>
+
+                <!-- Linie 5: Numere 4-6 și operații -->
+                <Button Content="4" Command="{Binding NumberCommand}" CommandParameter="4" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="5" Command="{Binding NumberCommand}" CommandParameter="5" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="6" Command="{Binding NumberCommand}" CommandParameter="6" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="-" Command="{Binding OperationCommand}" CommandParameter="-" Style="{StaticResource OperatorButtonStyle}"/>
+
+                <!-- Linie 6: Numere 1-3 și operații -->
+                <Button Content="1" Command="{Binding NumberCommand}" CommandParameter="1" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="2" Command="{Binding NumberCommand}" CommandParameter="2" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="3" Command="{Binding NumberCommand}" CommandParameter="3" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="+" Command="{Binding OperationCommand}" CommandParameter="+" Style="{StaticResource OperatorButtonStyle}"/>
+
+                <!-- Linie 7: +/- , 0, ., = -->
+                <Button Content="+/-" Command="{Binding UnaryOperationCommand}" CommandParameter="+/-" Style="{StaticResource FunctionButtonStyle}"/>
+                <Button Content="0" Command="{Binding NumberCommand}" CommandParameter="0" Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="." Command="{Binding NumberCommand}" CommandParameter="." Style="{StaticResource NumberButtonStyle}"/>
+                <Button Content="=" Command="{Binding EqualsCommand}" Style="{StaticResource EqualsButtonStyle}"/>
+            </UniformGrid>
+        </StackPanel>
+    </Grid>
+</Window>
